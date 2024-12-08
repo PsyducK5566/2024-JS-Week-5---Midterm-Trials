@@ -54,17 +54,37 @@ let data = [
 1.讀取資料：data 陣列中包含 3 筆資料，每筆資料都有 id、name、imgUrl、area、description、group、price 和 rate 等屬性。
 2.生成 HTML：使用 forEach 遍歷 data，為每筆資料生成對應的 HTML 結構，並將其累加到 text 變數中。
 3.渲染到頁面：將生成的 HTML 字串插入到 .ticketCard-area 容器中，顯示在頁面上。
+
+綁定表單的 submit 事件，當使用者點擊「新增套票」按鈕時觸發。
+使用 trim() 去除多餘的空格，並檢查是否有未填寫的欄位。
+使用 isNaN() 確保數字欄位（如金額、組數、星級）輸入正確。
+將新套票資料以物件形式加入 data 陣列。
+呼叫 renderCards(data) 重新渲染票券列表。
+使用 form.reset() 清空表單內容。
 */
 
-
+// 選取 DOM 元素
 const ticketCardArea = document.querySelector(".ticketCard-area");
-  
+const regionSearch = document.querySelector(".regionSearch");
+const searchResultText = document.querySelector("#searchResult-text");
+const addTicketForm = document.querySelector(".addTicket-form");
+const cantFindArea = document.querySelector(".cantFind-area");
+
+// 初始化頁面
+function init() {
+  renderCards(data); // 預設渲染所有資料
+  regionSearch.addEventListener("change", filterData); // 綁定篩選事件
+  addTicketForm.addEventListener("submit", addTicket); // 綁定新增套票事件
+}
+
+// 渲染票券卡片
+function renderCards(dataArray) {
   let text = "";
-  data.forEach((item, idx) => {
+  dataArray.forEach((item) => {
     text += `<li class="ticketCard">
           <div class="ticketCard-img">
             <a href="#">
-              <img src="${item.imgUrl}" alt="">
+              <img src="${item.imgUrl}" alt="${item.name}">
             </a>
             <div class="ticketCard-region">${item.area}</div>
             <div class="ticketCard-rank">${item.rate}</div>
@@ -81,14 +101,86 @@ const ticketCardArea = document.querySelector(".ticketCard-area");
             <div class="ticketCard-info">
               <p class="ticketCard-num">
                 <span><i class="fas fa-exclamation-circle"></i></span>
-                剩下最後 <span id="ticketCard-num">${item.group}</span> 組
+                剩下最後 <span>${item.group}</span> 組
               </p>
               <p class="ticketCard-price">
-                TWD <span id="ticketCard-price">${item.price}</span>
+                TWD <span>${item.price}</span>
               </p>
             </div>
           </div>
         </li>`;
-    ticketCardArea.innerHTML = text;
   });
-  
+
+  // 更新卡片區域
+  ticketCardArea.innerHTML = text;
+
+  // 更新搜尋結果筆數
+  searchResultText.textContent = `本次搜尋共 ${dataArray.length} 筆資料`;
+
+  // 顯示/隱藏「查無資料」區域
+  cantFindArea.style.display = dataArray.length === 0 ? "block" : "none";
+}
+
+// 篩選資料
+function filterData() {
+  const selectedRegion = regionSearch.value; // 取得使用者選擇的地區
+  if (selectedRegion === "") {
+    renderCards(data); // 顯示全部資料
+  } else {
+    const filteredData = data.filter((item) => item.area === selectedRegion); // 篩選符合條件的資料
+    renderCards(filteredData); // 渲染篩選後的資料
+  }
+}
+
+// 新增套票
+function addTicket(e) {
+  e.preventDefault(); // 阻止表單預設行為（刷新頁面）
+
+  // 取得表單中的輸入值
+  const ticketName = document.querySelector("#ticketName").value.trim();
+  const ticketImgUrl = document.querySelector("#ticketImgUrl").value.trim();
+  const ticketRegion = document.querySelector("#ticketRegion").value;
+  const ticketPrice = parseInt(document.querySelector("#ticketPrice").value, 10);
+  const ticketNum = parseInt(document.querySelector("#ticketNum").value, 10);
+  const ticketRate = parseInt(document.querySelector("#ticketRate").value, 10);
+  const ticketDescription = document
+    .querySelector("#ticketDescription")
+    .value.trim();
+
+  // 驗證輸入值是否有效
+  if (
+    !ticketName ||
+    !ticketImgUrl ||
+    !ticketRegion ||
+    isNaN(ticketPrice) ||
+    isNaN(ticketNum) ||
+    isNaN(ticketRate) ||
+    !ticketDescription
+  ) {
+    alert("請填寫所有欄位！");
+    return;
+  }
+
+  // 新增資料到 data 陣列
+  const newTicket = {
+    id: data.length, // 使用陣列長度作為 ID
+    name: ticketName,
+    imgUrl: ticketImgUrl,
+    area: ticketRegion,
+    description: ticketDescription,
+    group: ticketNum,
+    price: ticketPrice,
+    rate: ticketRate,
+  };
+  data.push(newTicket);
+
+  // 更新畫面
+  renderCards(data);
+
+  // 清空表單
+  addTicketForm.reset();
+  alert("新增套票成功！");
+}
+
+// 初始化頁面
+init();
