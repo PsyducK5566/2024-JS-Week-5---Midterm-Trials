@@ -62,6 +62,22 @@ let data = [
 呼叫 renderCards(data) 重新渲染票券列表。
 使用 form.reset() 清空表單內容。
 */
+/*
+2024/12/15 FEEDBACK:
+切換到「全部地區」選項時，建議顯示所有套票內容
+
+測試步驟：
+載入頁面，應該預設顯示所有票券。
+從下拉選單中選擇「台北」、「台中」或「高雄」，應該只顯示對應地區的票券。
+再次選擇「全部地區」，應該顯示所有票券。
+
+
+目前點擊新增套票按鈕時，不會執行 addTicket 函式，建議對元素註冊 click 事件來觸發此函式
+
+
+*/
+
+
 
 // 選取 DOM 元素
 const ticketCardArea = document.querySelector(".ticketCard-area");
@@ -124,13 +140,29 @@ function renderCards(dataArray) {
 // 篩選資料
 function filterData() {
   const selectedRegion = regionSearch.value; // 取得使用者選擇的地區
-  if (selectedRegion === "") {
+  if (selectedRegion === "全部地區" || selectedRegion === "") {
     renderCards(data); // 顯示全部資料
   } else {
     const filteredData = data.filter((item) => item.area === selectedRegion); // 篩選符合條件的資料
     renderCards(filteredData); // 渲染篩選後的資料
   }
 }
+
+/*
+綁定篩選事件 
+*/
+regionSearch.addEventListener("change", filterData); 
+
+/*
+選取新增套票按鈕
+*/
+const addTicketBtn = document.querySelector(".addTicket-btn");
+
+/* 
+註冊 click 事件
+*/
+addTicketBtn.addEventListener("click", addTicket);
+
 
 // 新增套票
 function addTicket(e) {
